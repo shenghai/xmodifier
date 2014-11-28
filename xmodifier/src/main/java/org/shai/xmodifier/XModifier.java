@@ -77,6 +77,9 @@ public class XModifier {
             if (node.isRootNode()) {
                 //root node
                 newNode = parent;
+            } else if (node.getCurNode().equals("text()")) {
+                parent.setTextContent(node.getValue());
+                return;
             } else {
                 //element
                 newNode = findOrCreateElement(parent, node);
@@ -90,6 +93,7 @@ public class XModifier {
                 create(newNode, node);
             }
         }
+
     }
 
     private void initXPath() {
@@ -125,7 +129,6 @@ public class XModifier {
 
     private Node findOrCreateElement(Node parent, XModifyNode node) throws XPathExpressionException {
         Map<String, Object> aResult = analyzeNodeExpression(node.getCurNode());
-
         String namespaceURI = (String) aResult.get("namespaceURI");
         String localName = (String) aResult.get("localName");
         String[] conditions = (String[]) aResult.get("conditions");

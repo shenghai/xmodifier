@@ -97,6 +97,47 @@ public class XModifierTest {
     }
 
     @Test
+    public void modify2() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify2.xml");
+        Document documentExpected = readDocument("modify2Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person[2]/Name", "NewName");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void modify21() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify2.xml");
+        Document documentExpected = readDocument("modify2Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person[2]/Name/text()", "NewName");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void modify3() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify2.xml");
+        Document documentExpected = readDocument("modify3Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person[4]/Name", "NewName");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void modify31() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify2.xml");
+        Document documentExpected = readDocument("modify3Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person[4]/Name/text()", "NewName");
+        modifier.modify();
+        System.out.println(writeXMLToString(document));
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
     public void test() throws IOException, SAXException, ParserConfigurationException {
         Document document = readDocument("test.xml");
         Document documentExpected = readDocument("testExpected.xml");
