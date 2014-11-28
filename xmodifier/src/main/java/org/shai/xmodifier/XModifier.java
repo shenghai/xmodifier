@@ -116,7 +116,21 @@ public class XModifier {
         String[] conditions = (String[]) aResult.get("conditions");
         String mark = (String) aResult.get("mark");
 
-        NodeList existNodeList = (NodeList) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODESET);
+        if (mark != null && mark.equals("add")) {
+            //create new element without double check
+            Node newCreatedNode = createNewElement(parent, namespaceURI, localName, conditions);
+            boolean canMoveToNext = node.moveNext();
+            if (!canMoveToNext) {
+                //last node
+                newCreatedNode.setTextContent(node.getValue());
+            } else {
+                //next node
+                create(newCreatedNode, node);
+            }
+            return;
+        }
+
+        NodeList existNodeList = (NodeList) xPathEvaluator.evaluate(node.getCurNodeXPath(), parent, XPathConstants.NODESET);
         if (existNodeList.getLength() > 0) {
             for (int i = 0; i < existNodeList.getLength(); i++) {
                 XModifyNode newNode = node.duplicate();
@@ -136,7 +150,7 @@ public class XModifier {
             }
         } else {
             Node newCreatedNode = createNewElement(parent, namespaceURI, localName, conditions);
-            Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
+            Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), parent, XPathConstants.NODE);
             if (!newCreatedNode.equals(checkExistNode)) {
                 throw new RuntimeException("Error to create " + node.getCurNode());
             }
@@ -177,8 +191,12 @@ public class XModifier {
         //nsPrefix:local[condition][condition]  for example ns:person[@name='john'][@age='16'][job]
         String temp = nodeExpression.trim();
         Map<String, Object> result = new HashMap<String, Object>();
-        String mark = StringUtils.substringBetween(nodeExpression, "(:", ")");
-        result.put("mark", mark);
+
+        if (nodeExpression.contains("(:")) {
+            String mark = StringUtils.substringBetween(nodeExpression, "(:", ")");
+            result.put("mark", mark);
+            temp = temp.replaceAll("\\(:.*?\\)", "");
+        }
 
         //1. deal with namespace prefix   temp = nsPrefix:local[condition][condition]
         String[] split = StringUtils.splitBySeparator(temp, ':', new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);

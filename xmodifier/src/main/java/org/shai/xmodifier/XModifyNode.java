@@ -34,9 +34,16 @@ public class XModifyNode {
         index = 0;
         elements = StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
                 new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
-        elementXPaths = StringUtils.connectArraysWithoutMark(
+        elementXPaths = StringUtils.removeMarks(
                 StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
                         new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, true));
+        for (int i = 0; i < elementXPaths.length; i++) {
+            if (i == 0) {
+                continue;
+            }
+            elementXPaths[i] = "." + elementXPaths[i];
+        }
+
     }
 
     public String getCurNode() {

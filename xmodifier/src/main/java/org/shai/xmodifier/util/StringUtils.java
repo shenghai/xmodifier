@@ -265,6 +265,18 @@ public class StringUtils {
         return s.replaceAll("\\(:.*?\\)", "");
     }
 
+    public static String[] removeMarks(String[] arg) {
+        String[] result = new String[arg.length];
+        for (int i = 0; i < arg.length; i++) {
+            String s = arg[i];
+            if (s.contains("(:")) {
+                s = removeMarks(s);
+            }
+            result[i] = s;
+        }
+        return result;
+    }
+
 
     public static String[] splitFirstTwo(String source, String key) {
         if (source == null) {
