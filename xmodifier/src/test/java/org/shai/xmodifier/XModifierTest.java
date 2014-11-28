@@ -21,27 +21,100 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 public class XModifierTest {
+    static {
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreComments(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+    }
+
+    /*
+     * test create elements, attributes, sub elements, text
+     */
+    @Test
+    public void create() throws ParserConfigurationException, IOException, SAXException {
+        Document document = createDocument();
+        Document documentExpected = readDocument("createExpected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.setNamespace("ns", "http://localhost");
+        // create an empty element
+        modifier.addModify("/ns:root/ns:element1");
+        // create an element with attribute
+        modifier.addModify("/ns:root/ns:element2[@attr=1]");
+        // append an new element to existing element1
+        modifier.addModify("/ns:root/ns:element1/ns:element11");
+        // create an element with text
+        modifier.addModify("/ns:root/ns:element3", "TEXT");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void create2() throws ParserConfigurationException, IOException, SAXException {
+        Document document = createDocument();
+        Document documentExpected = readDocument("create2Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.setNamespace("ns", "http://localhost");
+        // create an empty element
+        modifier.addModify("/ns:root/ns:element1");
+        // create an element with attribute
+        modifier.addModify("/ns:root/ns:element2/@attr", "1");
+        // append an new element to existing element1
+        modifier.addModify("/ns:root/ns:element1/ns:element11");
+        // create an element with text
+        modifier.addModify("/ns:root/ns:element3", "TEXT");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void create3() throws ParserConfigurationException, IOException, SAXException {
+        Document document = createDocument();
+        Document documentExpected = readDocument("create3Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.setNamespace("ns", "http://localhost");
+        // create an empty element
+        modifier.addModify("/ns:root/ns:element1");
+        // create an element with attribute
+        modifier.addModify("/ns:root/ns:element2[@attr=1]/ns:element21[@attr=21]");
+        // append an new element to existing element1
+        modifier.addModify("/ns:root/ns:element1/ns:element11");
+        // create an element with text
+        modifier.addModify("/ns:root/ns:element3", "TEXT");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void modify1() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify.xml");
+        Document documentExpected = readDocument("modifyExpected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.setNamespace("ns", "http://localhost");
+        modifier.addModify("/ns:root/ns:element1[ns:element12]/ns:element13");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
 
     @Test
     public void test() throws IOException, SAXException, ParserConfigurationException {
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("test.xml");
-        Document document = readDocument(in);
+        Document document = readDocument("test.xml");
+        Document documentExpected = readDocument("testExpected.xml");
         XModifier modifier = new XModifier(document);
         modifier.setNamespace("ns", "http://localhost");
-        modifier.addModify("/ns:root/ns:element1=text1");
-        modifier.addModify("/ns:root/ns:element4=text4");
-        modifier.addModify("//ns:element4/ns:element5[@value=100]=text4");
+        modifier.addModify("/ns:root/ns:element1", "text1");
+        modifier.addModify("/ns:root/ns:element4", "text4");
+        modifier.addModify("//ns:element4/ns:element5[@value=100]", "text5");
         modifier.modify();
-        String expectedXML = "<root xmlns=\"http://localhost\">\n" +
-                "    <element1>text1</element1>\n" +
-                "    <element2/>\n" +
-                "    <element3/>\n" +
-                "<element4>text4<element5 value=\"100\">text4</element5>\n" +
-                "</element4>\n" +
-                "</root>";
-        String actualXML = writeXMLToString(document);
-        DetailedDiff diff = new DetailedDiff(XMLUnit.compareXML(expectedXML, actualXML));
+        assertXmlEquals(documentExpected, document);
+    }
+
+    private void assertXmlEquals(Document documentExpected, Document document) throws IOException, SAXException {
+        String expect = writeXMLToString(documentExpected);
+        String actual = writeXMLToString(document);
+        DetailedDiff diff = new DetailedDiff(XMLUnit.compareXML(expect, actual));
         Assert.assertTrue(diff.getAllDifferences().toString(), diff.identical());
+
     }
 
     private Document createDocument() throws ParserConfigurationException {
@@ -49,6 +122,20 @@ public class XModifierTest {
         builderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
         return documentBuilder.newDocument();
+    }
+
+    private Document readDocument(String name) throws ParserConfigurationException, IOException, SAXException {
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+        try {
+            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+            return documentBuilder.parse(in);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
     }
 
     private Document readDocument(InputStream in) throws ParserConfigurationException, IOException, SAXException {

@@ -159,6 +159,92 @@ public class StringUtils {
         return result;
     }
 
+    public static String[] splitBySeparator(String src, String[] separators, char[][] quoterList, boolean keepSeparator) {
+        if (src == null) {
+            return null;
+        }
+        Arrays.sort(separators, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.length() < o2.length() ? 1 : -1;
+            }
+        });
+
+        char[] chars = src.toCharArray();
+        XPathPatternQuoter quoter = new XPathPatternQuoter();
+        for (char[] quoterChar : quoterList) {
+            quoter.addQuoter(quoterChar[0], quoterChar[1]);
+        }
+        List<Cons<Integer, Integer>> splitPoints = new ArrayList<Cons<Integer, Integer>>();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            quoter.check(c);
+            if (!quoter.isQuoting()) {
+                int offset = checkMatches(chars, i, separators);
+                if (offset > 0) {
+                    splitPoints.add(new Cons<Integer, Integer>(i, offset));
+                    i = i + offset;
+                }
+            }
+        }
+        String[] result = new String[splitPoints.size() + 1];
+        for (int i = 0; i < splitPoints.size(); i++) {
+            Cons<Integer, Integer> splitPoint = splitPoints.get(i);
+            if (i == 0) {
+                result[i] = src.substring(0, splitPoint.getLeft());
+            } else {
+                if (keepSeparator) {
+                    result[i] = src.substring(splitPoints.get(i - 1).getLeft(), splitPoint.getLeft());
+                } else {
+                    result[i] = src.substring(splitPoints.get(i - 1).getLeft() + splitPoints.get(i - 1).getRight(), splitPoint.getLeft());
+                }
+            }
+        }
+        int lastSplitPoint = 0;
+        if (splitPoints.size() > 0) {
+            if (keepSeparator) {
+                lastSplitPoint = splitPoints.get(splitPoints.size() - 1).getLeft();
+            } else {
+                lastSplitPoint = splitPoints.get(splitPoints.size() - 1).getLeft() +
+                        splitPoints.get(splitPoints.size() - 1).getRight();
+
+            }
+        }
+        result[result.length - 1] = src.substring(lastSplitPoint);
+        return result;
+    }
+
+    private static int checkMatches(char[] chars, int start, String[] separators) {
+        for (String separator : separators) {
+            char[] chars1 = separator.toCharArray();
+            boolean isMatch = true;
+            for (int i = 0; i < chars1.length; i++) {
+                char c = chars1[i];
+                if (c != chars[start + i]) {
+                    isMatch = false;
+                    break;
+                }
+            }
+            if (isMatch) {
+                return chars1.length;
+            }
+        }
+        return -1;
+    }
+
+    public static String[] conArrays(String[] arg) {
+        String[] result = new String[arg.length];
+        for (int i = 0; i < arg.length; i++) {
+            String s = arg[i];
+            if (i == 0) {
+                result[0] = s;
+            } else {
+                result[i] = result[i - 1] + s;
+            }
+        }
+        return result;
+    }
+
     public static String[] splitFirstTwo(String source, String key) {
         if (source == null) {
             return null;

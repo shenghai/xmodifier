@@ -31,19 +31,24 @@ public class XModifier {
         nsMap.put(prefix, url);
     }
 
-    public void addModify(String exp) {
-        xModifyNodes.add(new XModifyNode(exp));
+    public void addModify(String xPath, String value) {
+        xModifyNodes.add(new XModifyNode(xPath, value));
+    }
+
+    public void addModify(String xPath) {
+        xModifyNodes.add(new XModifyNode(xPath, null));
     }
 
     public void modify() {
         initXPath();
-        try {
-            for (XModifyNode xModifyNode : xModifyNodes) {
+        for (XModifyNode xModifyNode : xModifyNodes) {
+            try {
                 modify(xModifyNode);
+            } catch (Exception e) {
+                throw new XModifyFailException(xModifyNode.toString(), e);
             }
-        } catch (Exception e) {
-            throw new XModifyFailException(e);
         }
+
 
     }
 
@@ -125,17 +130,16 @@ public class XModifier {
         String localName = (String) aResult.get("localName");
         String[] conditions = (String[]) aResult.get("conditions");
 
-        Node existNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(),document, XPathConstants.NODE);
+        Node existNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
         if (existNode == null) {
             existNode = createNewElement(parent, namespaceURI, localName, conditions);
-            Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(),document, XPathConstants.NODE);
+            Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
             if (!existNode.equals(checkExistNode)) {
                 throw new RuntimeException("Error to create " + node.getCurNode());
             }
         }
         return existNode;
     }
-
 
 
     private Element createNewElement(Node parent, String namespaceURI, String local, String[] conditions) throws XPathExpressionException {

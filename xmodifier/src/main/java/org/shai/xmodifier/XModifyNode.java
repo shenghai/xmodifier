@@ -12,8 +12,8 @@ import java.util.List;
 public class XModifyNode {
     private String xPath;
     private String value;
-    private List<String> elements = new ArrayList<String>();
-    private List<String> elementXPaths = new ArrayList<String>();
+    private String[] elements;
+    private String[] elementXPaths;
     private int index = 0;
 
 
@@ -21,39 +21,38 @@ public class XModifyNode {
         String[] split = StringUtils.splitTwoWithKey1Key2ByLast(expression, "=>", "=");
         xPath = split[0];
         value = split[1];
-        elements = Arrays.asList(xPath.split("/+"));
-        index = 0;
-        String temp = xPath;
-        for (String element : elements) {
-            int i = temp.indexOf(element);
-            String substring = temp.substring(0, i + element.length());
-            if (elementXPaths.size() > 0) {
-                elementXPaths.add(elementXPaths.get(elementXPaths.size() - 1) + substring);
-            }else{
-                elementXPaths.add(substring);
-            }
-            temp = xPath.substring(i + element.length());
-        }
+        analyseElements(xPath);
     }
 
     public XModifyNode(String xPath, String value) {
-        this(xPath + "=" + value);
+        this.xPath = xPath;
+        this.value = value;
+        analyseElements(xPath);
+    }
+
+    private void analyseElements(String xPath) {
+        elements = StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
+                new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
+        index = 0;
+        elementXPaths = StringUtils.conArrays(
+                StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
+                        new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, true));
     }
 
     public String getCurNode() {
-        return elements.get(index);
+        return elements[index];
     }
 
     public String getPreNode() {
         if (index - 1 >= 0) {
-            return elements.get(index - 1);
+            return elements[index - 1];
         }
         return null;
     }
 
     public boolean moveNext() {
         index++;
-        return index < elements.size();
+        return index < elements.length;
     }
 
     public String getValue() {
@@ -73,34 +72,15 @@ public class XModifyNode {
     }
 
     public String getCurNodeXPath() {
-        return elementXPaths.get(index);
+        return elementXPaths[index];
     }
 
-//    public String getXPath() {
-//        return xPath;
-//    }
-//
-//    public String getValue() {
-//        return value;
-//    }
-//
-//    public String getXPathHeader() {
-//        return xPathHeader;
-//    }
-//
-//    public String getXPathRest() {
-//        return restPath;
-//    }
-//
-//    public boolean isAttributeModifier() {
-//        return xPathHeader.startsWith("@");
-//    }
-//
-//    public void getHeaderXPath() {
-//
-//    }
-//
-//    public void moveToNextElement() {
-//
-//    }
+    @Override
+    public String toString() {
+        return "XModifyNode{" +
+                "xPath='" + xPath + '\'' +
+                ", value='" + value + '\'' +
+                ", index=" + index +
+                '}';
+    }
 }
