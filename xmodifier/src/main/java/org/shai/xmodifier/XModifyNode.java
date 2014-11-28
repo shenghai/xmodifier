@@ -16,14 +16,6 @@ public class XModifyNode {
     private String[] elementXPaths;
     private int index = 0;
 
-
-    public XModifyNode(String expression) {
-        String[] split = StringUtils.splitTwoWithKey1Key2ByLast(expression, "=>", "=");
-        xPath = split[0];
-        value = split[1];
-        analyseElements(xPath);
-    }
-
     public XModifyNode(String xPath, String value) {
         this.xPath = xPath;
         this.value = value;
