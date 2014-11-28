@@ -144,8 +144,7 @@ public class XModifierTest {
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person/Name", "NewName");
         modifier.modify();
-        System.out.println(writeXMLToString(document));
-//        assertXmlEquals(documentExpected, document);
+        assertXmlEquals(documentExpected, document);
     }
 
     @Test
