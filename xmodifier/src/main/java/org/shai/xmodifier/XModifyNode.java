@@ -17,16 +17,24 @@ public class XModifyNode {
     private int index = 0;
 
     public XModifyNode(String xPath, String value) {
-        this.xPath = xPath;
+        if (xPath.contains("(:")) {
+            this.xPath = StringUtils.removeMarks(xPath);
+        } else {
+            this.xPath = xPath;
+        }
         this.value = value;
         analyseElements(xPath);
     }
 
+    private XModifyNode() {
+
+    }
+
     private void analyseElements(String xPath) {
+        index = 0;
         elements = StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
                 new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
-        index = 0;
-        elementXPaths = StringUtils.conArrays(
+        elementXPaths = StringUtils.connectArraysWithoutMark(
                 StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
                         new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, true));
     }
@@ -76,9 +84,13 @@ public class XModifyNode {
                 '}';
     }
 
-    protected XModifyNode duplicate(){
-        XModifyNode node = new XModifyNode(xPath, value);
+    protected XModifyNode duplicate() {
+        XModifyNode node = new XModifyNode();
+        node.xPath = this.xPath;
+        node.value = this.value;
         node.index = this.index;
+        node.elements = this.elements;
+        node.elementXPaths = this.elementXPaths;
         return node;
     }
 }

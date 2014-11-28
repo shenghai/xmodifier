@@ -232,7 +232,7 @@ public class StringUtils {
         return -1;
     }
 
-    public static String[] conArrays(String[] arg) {
+    public static String[] connectArrays(String[] arg) {
         String[] result = new String[arg.length];
         for (int i = 0; i < arg.length; i++) {
             String s = arg[i];
@@ -244,6 +244,27 @@ public class StringUtils {
         }
         return result;
     }
+
+    public static String[] connectArraysWithoutMark(String[] arg) {
+        String[] result = new String[arg.length];
+        for (int i = 0; i < arg.length; i++) {
+            String s = arg[i];
+            if (s.contains("(:")) {
+                s = removeMarks(s);
+            }
+            if (i == 0) {
+                result[0] = s;
+            } else {
+                result[i] = result[i - 1] + s;
+            }
+        }
+        return result;
+    }
+
+    public static String removeMarks(String s) {
+        return s.replaceAll("\\(:.*?\\)", "");
+    }
+
 
     public static String[] splitFirstTwo(String source, String key) {
         if (source == null) {

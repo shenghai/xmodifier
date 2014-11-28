@@ -3,7 +3,6 @@ package org.shai.xmodifier;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -99,7 +98,7 @@ public class XModifierTest {
 
     @Test
     public void modify2() throws ParserConfigurationException, IOException, SAXException {
-        Document document = readDocument("modify2.xml");
+        Document document = readDocument("PersonList.xml");
         Document documentExpected = readDocument("modify2Expected.xml");
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person[2]/Name", "NewName");
@@ -109,7 +108,7 @@ public class XModifierTest {
 
     @Test
     public void modify21() throws ParserConfigurationException, IOException, SAXException {
-        Document document = readDocument("modify2.xml");
+        Document document = readDocument("PersonList.xml");
         Document documentExpected = readDocument("modify2Expected.xml");
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person[2]/Name/text()", "NewName");
@@ -119,7 +118,7 @@ public class XModifierTest {
 
     @Test
     public void modify3() throws ParserConfigurationException, IOException, SAXException {
-        Document document = readDocument("modify2.xml");
+        Document document = readDocument("PersonList.xml");
         Document documentExpected = readDocument("modify3Expected.xml");
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person[4]/Name", "NewName");
@@ -129,7 +128,7 @@ public class XModifierTest {
 
     @Test
     public void modify31() throws ParserConfigurationException, IOException, SAXException {
-        Document document = readDocument("modify2.xml");
+        Document document = readDocument("PersonList.xml");
         Document documentExpected = readDocument("modify3Expected.xml");
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person[4]/Name/text()", "NewName");
@@ -139,10 +138,20 @@ public class XModifierTest {
 
     @Test
     public void modify4() throws ParserConfigurationException, IOException, SAXException {
-        Document document = readDocument("modify2.xml");
+        Document document = readDocument("PersonList.xml");
         Document documentExpected = readDocument("modify4Expected.xml");
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person/Name", "NewName");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void delete1() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("PersonList.xml");
+        Document documentExpected = readDocument("delete1Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person[1]/Name(:delete)");
         modifier.modify();
         assertXmlEquals(documentExpected, document);
     }

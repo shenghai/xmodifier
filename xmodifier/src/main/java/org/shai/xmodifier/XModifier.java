@@ -43,31 +43,10 @@ public class XModifier {
         initXPath();
         for (XModifyNode xModifyNode : xModifyNodes) {
             try {
-                modify(xModifyNode);
+                create(document, xModifyNode);
             } catch (Exception e) {
                 throw new XModifyFailException(xModifyNode.toString(), e);
             }
-        }
-
-
-    }
-
-    private void modify(XModifyNode xModifyNode) throws XPathExpressionException {
-//        Node node = (Node) xPathEvaluator.evaluate(xModifyNode.getXPath(), document, XPathConstants.NODE);
-        NodeList nodeList = (NodeList) xPathEvaluator.evaluate(xModifyNode.getXPath(), document, XPathConstants.NODESET);
-        if (nodeList != null && nodeList.getLength() != 0) {
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-                if (node instanceof Element) {
-                    node.setTextContent(xModifyNode.getValue());
-                } else if (node instanceof Attr) {
-                    ((Attr) node).setValue(xModifyNode.getValue());
-                } else {
-                    node.setTextContent(xModifyNode.getValue());
-                }
-            }
-        } else {
-            create(document, xModifyNode);
         }
     }
 
@@ -135,13 +114,17 @@ public class XModifier {
         String namespaceURI = (String) aResult.get("namespaceURI");
         String localName = (String) aResult.get("localName");
         String[] conditions = (String[]) aResult.get("conditions");
+        String mark = (String) aResult.get("mark");
 
-//        Node existNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
         NodeList existNodeList = (NodeList) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODESET);
         if (existNodeList.getLength() > 0) {
             for (int i = 0; i < existNodeList.getLength(); i++) {
                 XModifyNode newNode = node.duplicate();
                 Node item = existNodeList.item(i);
+                if (mark != null && mark.equals("delete")) {
+                    parent.removeChild(item);
+                    continue;
+                }
                 boolean canMoveToNext = newNode.moveNext();
                 if (!canMoveToNext) {
                     //last node
@@ -194,6 +177,8 @@ public class XModifier {
         //nsPrefix:local[condition][condition]  for example ns:person[@name='john'][@age='16'][job]
         String temp = nodeExpression.trim();
         Map<String, Object> result = new HashMap<String, Object>();
+        String mark = StringUtils.substringBetween(nodeExpression, "(:", ")");
+        result.put("mark", mark);
 
         //1. deal with namespace prefix   temp = nsPrefix:local[condition][condition]
         String[] split = StringUtils.splitBySeparator(temp, ':', new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
@@ -226,7 +211,6 @@ public class XModifier {
             conditions[i] = StringUtils.stripEnd(s, "]");
         }
         result.put("conditions", conditions);
-
         return result;
     }
 

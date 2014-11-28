@@ -24,4 +24,11 @@ public class StringUtilTest {
         Assert.assertEquals("[@attr=1]", Arrays.toString(strings));
 
     }
+
+    @Test
+    public void removeMarks() {
+        String s = "ns:root//ns:element1(:add)/ns:element11(:delete)";
+        String s1 = StringUtils.removeMarks(s);
+        System.out.println(s1);
+    }
 }
