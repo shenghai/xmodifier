@@ -75,4 +75,10 @@ public class XModifyNode {
                 ", index=" + index +
                 '}';
     }
+
+    protected XModifyNode duplicate(){
+        XModifyNode node = new XModifyNode(xPath, value);
+        node.index = this.index;
+        return node;
+    }
 }

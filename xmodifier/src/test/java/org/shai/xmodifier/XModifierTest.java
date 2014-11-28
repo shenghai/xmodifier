@@ -3,6 +3,7 @@ package org.shai.xmodifier;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -133,8 +134,18 @@ public class XModifierTest {
         XModifier modifier = new XModifier(document);
         modifier.addModify("//PersonList/Person[4]/Name/text()", "NewName");
         modifier.modify();
-        System.out.println(writeXMLToString(document));
         assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
+    public void modify4() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("modify2.xml");
+        Document documentExpected = readDocument("modify4Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person/Name", "NewName");
+        modifier.modify();
+        System.out.println(writeXMLToString(document));
+//        assertXmlEquals(documentExpected, document);
     }
 
     @Test

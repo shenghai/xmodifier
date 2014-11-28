@@ -53,14 +53,18 @@ public class XModifier {
     }
 
     private void modify(XModifyNode xModifyNode) throws XPathExpressionException {
-        Node node = (Node) xPathEvaluator.evaluate(xModifyNode.getXPath(), document, XPathConstants.NODE);
-        if (node != null) {
-            if (node instanceof Element) {
-                node.setTextContent(xModifyNode.getValue());
-            } else if (node instanceof Attr) {
-                ((Attr) node).setValue(xModifyNode.getValue());
-            } else {
-                node.setTextContent(xModifyNode.getValue());
+//        Node node = (Node) xPathEvaluator.evaluate(xModifyNode.getXPath(), document, XPathConstants.NODE);
+        NodeList nodeList = (NodeList) xPathEvaluator.evaluate(xModifyNode.getXPath(), document, XPathConstants.NODESET);
+        if (nodeList != null && nodeList.getLength() != 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    node.setTextContent(xModifyNode.getValue());
+                } else if (node instanceof Attr) {
+                    ((Attr) node).setValue(xModifyNode.getValue());
+                } else {
+                    node.setTextContent(xModifyNode.getValue());
+                }
             }
         } else {
             create(document, xModifyNode);
@@ -77,20 +81,19 @@ public class XModifier {
             if (node.isRootNode()) {
                 //root node
                 newNode = parent;
+                boolean canMoveToNext = node.moveNext();
+                if (!canMoveToNext) {
+                    //last node
+                    newNode.setTextContent(node.getValue());
+                } else {
+                    //next node
+                    create(newNode, node);
+                }
             } else if (node.getCurNode().equals("text()")) {
                 parent.setTextContent(node.getValue());
-                return;
             } else {
                 //element
-                newNode = findOrCreateElement(parent, node);
-            }
-            boolean canMoveToNext = node.moveNext();
-            if (!canMoveToNext) {
-                //last node
-                newNode.setTextContent(node.getValue());
-            } else {
-                //next node
-                create(newNode, node);
+                findOrCreateElement(parent, node);
             }
         }
 
@@ -127,21 +130,42 @@ public class XModifier {
         ((Element) node).setAttribute(current, value);
     }
 
-    private Node findOrCreateElement(Node parent, XModifyNode node) throws XPathExpressionException {
+    private void findOrCreateElement(Node parent, XModifyNode node) throws XPathExpressionException {
         Map<String, Object> aResult = analyzeNodeExpression(node.getCurNode());
         String namespaceURI = (String) aResult.get("namespaceURI");
         String localName = (String) aResult.get("localName");
         String[] conditions = (String[]) aResult.get("conditions");
 
-        Node existNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
-        if (existNode == null) {
-            existNode = createNewElement(parent, namespaceURI, localName, conditions);
+//        Node existNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
+        NodeList existNodeList = (NodeList) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODESET);
+        if (existNodeList.getLength() > 0) {
+            for (int i = 0; i < existNodeList.getLength(); i++) {
+                XModifyNode newNode = node.duplicate();
+                Node item = existNodeList.item(i);
+                boolean canMoveToNext = newNode.moveNext();
+                if (!canMoveToNext) {
+                    //last node
+                    item.setTextContent(node.getValue());
+                } else {
+                    //next node
+                    create(item, newNode);
+                }
+            }
+        } else {
+            Node newCreatedNode = createNewElement(parent, namespaceURI, localName, conditions);
             Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), document, XPathConstants.NODE);
-            if (!existNode.equals(checkExistNode)) {
+            if (!newCreatedNode.equals(checkExistNode)) {
                 throw new RuntimeException("Error to create " + node.getCurNode());
             }
+            boolean canMoveToNext = node.moveNext();
+            if (!canMoveToNext) {
+                //last node
+                newCreatedNode.setTextContent(node.getValue());
+            } else {
+                //next node
+                create(newCreatedNode, node);
+            }
         }
-        return existNode;
     }
 
 
