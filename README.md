@@ -5,8 +5,22 @@ xmodifier
 		XPATH is used for searching XML, 
 		but sometimes you may want use it to edit/create XML:
 
+		| XPath                                                         | Value   | Desc                                              |
+		|---------------------------------------------------------------+---------+---------------------------------------------------|
+		| /ns:root/ns:element1                                          |         | add <ns:element1/>                                |
+		| /ns:root/ns:element2[@attr=1]                                 |         | add <ns:element2 attr="1"/>                       |
+		| /ns:root/ns:element2/@attr                                    | 1       | add <ns:element2 attr="1"/>                       |
+		| /ns:root/ns:element1/ns:element11                             |         | add <ns:element11/>                               |
+		| /ns:root/ns:element3                                          | TEXT    | add <ns:element3>TEXT</ns:element3>               |
+		| /ns:root/ns:element1[ns:element12]/ns:element13               |         | add <ns:element13/>                               |
+		| //PersonList/Person[2]/Name                                   | NewName | set the second Person node's Name Text            |
+		| //PersonList/Person[2]/Name/text()                            | NewName | set the second Person node's Name Text            |
+		| //PersonList/Person[1]/Name(:delete)                          |         | delete this Name node                             |
+		| //PersonList/Person(:add)/Name                                | NewName | alway add a new Person node                       |
+		| //PersonList/Person(:insertBefore(Person[Name='Name2']))/Name | NewName | add a new Person node before Person named "Name2" |
+
+
 		code example:
-		
 		Create new xml:
 
 		Document document = createDocument(); //empty document
