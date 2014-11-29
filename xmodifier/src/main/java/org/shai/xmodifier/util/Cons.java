@@ -12,11 +12,30 @@ public class Cons<L, R> {
         this.right = right;
     }
 
+    public Cons() {
+    }
+
+    public void setLeft(L left) {
+        this.left = left;
+    }
+
+    public void setRight(R right) {
+        this.right = right;
+    }
+
     public L getLeft() {
         return left;
     }
 
     public R getRight() {
         return right;
+    }
+
+    @Override
+    public String toString() {
+        return "Cons{" +
+                "left=" + left +
+                ", right=" + right +
+                '}';
     }
 }

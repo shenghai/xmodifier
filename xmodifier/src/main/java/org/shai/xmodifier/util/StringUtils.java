@@ -1,6 +1,8 @@
 package org.shai.xmodifier.util;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Shenghai on 14-11-24.
@@ -46,6 +48,67 @@ public class StringUtils {
             }
         }
         return null;
+    }
+
+    public static Cons<String, String> findFirstQuotingString(String str, Cons<String, String> quotingMark, List<Cons<String, String>> escapingMarks) {
+        int length = str.length();
+        Cons<Integer, Integer> resultIndex = new Cons<Integer, Integer>();
+        StringQuoter quoter = new StringQuoter();
+        quoter.addAllQuoters(escapingMarks);
+        for (int i = 0, i2; i < length; i = (i2 > i) ? i2 : i + 1) {
+            String rest = str.substring(i);
+            if (!quoter.isQuoting()) {
+                if (resultIndex.getLeft() == null && rest.startsWith(quotingMark.getLeft())) {
+                    i2 = i + quotingMark.getLeft().length();
+                    resultIndex.setLeft(i2);
+                    continue;
+                }
+                if (resultIndex.getLeft() != null && resultIndex.getRight() == null
+                        && rest.startsWith(quotingMark.getRight())) {
+                    resultIndex.setRight(i);
+                    break;
+                }
+            }
+            int check = quoter.check(rest);
+            i2 = i + check;
+        }
+        if (resultIndex.getLeft() != null && resultIndex.getRight() != null) {
+            Cons<String, String> result = new Cons<String, String>();
+            result.setLeft(str.substring(resultIndex.getLeft(), resultIndex.getRight()));
+            result.setRight(str.substring(0, resultIndex.getLeft() - quotingMark.getLeft().length())
+                    + str.substring(resultIndex.getRight() + quotingMark.getRight().length()));
+            return result;
+
+        }
+        return null;
+    }
+
+    public static String removeQuotingString(String str, Cons<String, String> quotingMark, List<Cons<String, String>> escapingMarks) {
+        Cons<String, String> result;
+        String temp = str;
+        do {
+            result = findFirstQuotingString(temp, quotingMark, escapingMarks);
+            if (result == null) {
+                break;
+            } else {
+                temp = result.getRight();
+            }
+        } while (true);
+        return temp;
+    }
+
+
+    public static Cons<String, String> findFirstQuotingString(String str, Cons<String, String> quotingMark) {
+        return findFirstQuotingString(str, quotingMark, null);
+    }
+
+    public static String findSubStringByRegEx(String str, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(str);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return "";
     }
 
     public static String removeEnd(String str, String remove) {
@@ -232,45 +295,12 @@ public class StringUtils {
         return -1;
     }
 
-    public static String[] connectArrays(String[] arg) {
-        String[] result = new String[arg.length];
-        for (int i = 0; i < arg.length; i++) {
-            String s = arg[i];
-            if (i == 0) {
-                result[0] = s;
-            } else {
-                result[i] = result[i - 1] + s;
-            }
-        }
-        return result;
-    }
-
-    public static String[] connectArraysWithoutMark(String[] arg) {
-        String[] result = new String[arg.length];
-        for (int i = 0; i < arg.length; i++) {
-            String s = arg[i];
-            if (s.contains("(:")) {
-                s = removeMarks(s);
-            }
-            if (i == 0) {
-                result[0] = s;
-            } else {
-                result[i] = result[i - 1] + s;
-            }
-        }
-        return result;
-    }
-
-    public static String removeMarks(String s) {
-        return s.replaceAll("\\(:.*?\\)", "");
-    }
-
     public static String[] removeMarks(String[] arg) {
         String[] result = new String[arg.length];
         for (int i = 0; i < arg.length; i++) {
             String s = arg[i];
             if (s.contains("(:")) {
-                s = removeMarks(s);
+                s = StringUtils.removeQuotingString(s, new Cons<String, String>("(:", ")"), Arrays.asList(new Cons<String, String>("(", ")")));
             }
             result[i] = s;
         }

@@ -32,11 +32,11 @@ public class XModifier {
     }
 
     public void addModify(String xPath, String value) {
-        xModifyNodes.add(new XModifyNode(xPath, value));
+        xModifyNodes.add(new XModifyNode(nsMap, xPath, value));
     }
 
     public void addModify(String xPath) {
-        xModifyNodes.add(new XModifyNode(xPath, null));
+        xModifyNodes.add(new XModifyNode(nsMap, xPath, null));
     }
 
     public void modify() {
@@ -110,15 +110,10 @@ public class XModifier {
     }
 
     private void findOrCreateElement(Node parent, XModifyNode node) throws XPathExpressionException {
-        Map<String, Object> aResult = analyzeNodeExpression(node.getCurNode());
-        String namespaceURI = (String) aResult.get("namespaceURI");
-        String localName = (String) aResult.get("localName");
-        String[] conditions = (String[]) aResult.get("conditions");
-        String mark = (String) aResult.get("mark");
-
-        if (mark != null && mark.equals("add")) {
+        if (node.isAdding()) {
             //create new element without double check
-            Node newCreatedNode = createNewElement(parent, namespaceURI, localName, conditions);
+            Node newCreatedNode = createNewElement(node.getNamespaceURI(), node.getLocalName(), node.getConditions());
+            parent.appendChild(newCreatedNode);
             boolean canMoveToNext = node.moveNext();
             if (!canMoveToNext) {
                 //last node
@@ -130,12 +125,29 @@ public class XModifier {
             return;
         }
 
+        if (node.isInsertBefore()) {
+            //create new element without double check
+            Node newCreatedNode = createNewElement(node.getNamespaceURI(), node.getLocalName(), node.getConditions());
+            Node referNode = (Node) xPathEvaluator.evaluate(node.getInsertBeforeXPath(), parent, XPathConstants.NODE);
+            parent.insertBefore(newCreatedNode, referNode);
+            boolean canMoveToNext = node.moveNext();
+            if (!canMoveToNext) {
+                //last node
+                newCreatedNode.setTextContent(node.getValue());
+            } else {
+                //next node
+                create(newCreatedNode, node);
+            }
+            return;
+
+        }
+
         NodeList existNodeList = (NodeList) xPathEvaluator.evaluate(node.getCurNodeXPath(), parent, XPathConstants.NODESET);
         if (existNodeList.getLength() > 0) {
             for (int i = 0; i < existNodeList.getLength(); i++) {
                 XModifyNode newNode = node.duplicate();
                 Node item = existNodeList.item(i);
-                if (mark != null && mark.equals("delete")) {
+                if (node.isDeleting()) {
                     parent.removeChild(item);
                     continue;
                 }
@@ -149,10 +161,11 @@ public class XModifier {
                 }
             }
         } else {
-            Node newCreatedNode = createNewElement(parent, namespaceURI, localName, conditions);
+            Node newCreatedNode = createNewElement(node.getNamespaceURI(), node.getLocalName(), node.getConditions());
+            parent.appendChild(newCreatedNode);
             Node checkExistNode = (Node) xPathEvaluator.evaluate(node.getCurNodeXPath(), parent, XPathConstants.NODE);
             if (!newCreatedNode.equals(checkExistNode)) {
-                throw new RuntimeException("Error to create " + node.getCurNode());
+                throw new XModifyFailException("Error to create " + node.getCurNode());
             }
             boolean canMoveToNext = node.moveNext();
             if (!canMoveToNext) {
@@ -166,7 +179,7 @@ public class XModifier {
     }
 
 
-    private Element createNewElement(Node parent, String namespaceURI, String local, String[] conditions) throws XPathExpressionException {
+    private Element createNewElement(String namespaceURI, String local, String[] conditions) throws XPathExpressionException {
         Element newElement = document.createElementNS(namespaceURI, local);
         if (ArrayUtils.isNotEmpty(conditions)) {
             for (String condition : conditions) {
@@ -180,56 +193,9 @@ public class XModifier {
                 String[] strings = StringUtils.splitBySeparator(condition, '=');
                 String xpath = strings[0];
                 String value = StringUtils.unquote(strings[1]);
-                create(newElement, new XModifyNode(xpath, value));
+                create(newElement, new XModifyNode(nsMap, xpath, value));
             }
         }
-        parent.appendChild(newElement);
         return newElement;
     }
-
-    private Map<String, Object> analyzeNodeExpression(String nodeExpression) {
-        //nsPrefix:local[condition][condition]  for example ns:person[@name='john'][@age='16'][job]
-        String temp = nodeExpression.trim();
-        Map<String, Object> result = new HashMap<String, Object>();
-
-        if (nodeExpression.contains("(:")) {
-            String mark = StringUtils.substringBetween(nodeExpression, "(:", ")");
-            result.put("mark", mark);
-            temp = temp.replaceAll("\\(:.*?\\)", "");
-        }
-
-        //1. deal with namespace prefix   temp = nsPrefix:local[condition][condition]
-        String[] split = StringUtils.splitBySeparator(temp, ':', new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
-        String nsPrefix = null;
-        if (split[1] != null) {
-            nsPrefix = StringUtils.trimToNull(split[0]);
-            result.put("nsPrefix", nsPrefix);
-            temp = split[1];
-        }
-        String namespaceURI = nsMap.get(nsPrefix);
-        result.put("namespaceURI", namespaceURI);
-
-        //2. deal with local name    temp = local[condition][condition]
-        split = StringUtils.splitBySeparator(temp, '[', true);
-        if (split[1] == null) {
-            String localName = StringUtils.trimToNull(split[0]);
-            result.put("localName", localName);
-            return result;
-        } else {
-            String localName = StringUtils.trimToNull(split[0]);
-            result.put("localName", localName);
-            temp = split[1];
-        }
-
-        //3. deal with conditions    temp = [condition][condition]
-        split = temp.substring(1).split("\\[");
-        String[] conditions = new String[split.length];
-        for (int i = 0; i < split.length; i++) {
-            String s = split[i];
-            conditions[i] = StringUtils.stripEnd(s, "]");
-        }
-        result.put("conditions", conditions);
-        return result;
-    }
-
 }

@@ -1,36 +1,36 @@
 package org.shai.xmodifier;
 
+import org.shai.xmodifier.util.Cons;
 import org.shai.xmodifier.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Shenghai on 14-11-24.
  */
 public class XModifyNode {
-    private String xPath;
-    private String value;
-    private String[] elements;
-    private String[] elementXPaths;
-    private int index = 0;
+    private final Map<String, String> nsMap;
+    private final String xPath;
+    private final String value;
+    private final String[] elements;
+    private final String[] elementXPaths;
 
-    public XModifyNode(String xPath, String value) {
+    //below fields are for current node status
+    private int index = 0;
+    private String nsPrefix;
+    private String namespaceURI;
+    private String localName;
+    private String[] conditions;
+    private String mark;
+
+    public XModifyNode(Map<String, String> nsMap, String xPath, String value) {
+        this.nsMap = nsMap;
         if (xPath.contains("(:")) {
-            this.xPath = StringUtils.removeMarks(xPath);
+            this.xPath = StringUtils.removeQuotingString(xPath, new Cons<String, String>("(:", ")"), Arrays.asList(new Cons<String, String>("(", ")")));
         } else {
             this.xPath = xPath;
         }
         this.value = value;
-        analyseElements(xPath);
-    }
-
-    private XModifyNode() {
-
-    }
-
-    private void analyseElements(String xPath) {
         index = 0;
         elements = StringUtils.splitBySeparator(xPath, new String[]{"/", "//"},
                 new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
@@ -43,7 +43,18 @@ public class XModifyNode {
             }
             elementXPaths[i] = "." + elementXPaths[i];
         }
+        analyzeCurrentNode();
+    }
 
+
+    private XModifyNode(Map<String, String> nsMap, String xPath, String value, String[] elements, String[] elementXPaths, int index) {
+        this.nsMap = nsMap;
+        this.xPath = xPath;
+        this.value = value;
+        this.elements = elements;
+        this.elementXPaths = elementXPaths;
+        this.index = index;
+        analyzeCurrentNode();
     }
 
     public String getCurNode() {
@@ -58,8 +69,50 @@ public class XModifyNode {
     }
 
     public boolean moveNext() {
+        if (index >= elements.length - 1) {
+            return false;
+        }
         index++;
-        return index < elements.length;
+        analyzeCurrentNode();
+        return true;
+    }
+
+    private void analyzeCurrentNode() {
+        String nodeExpression = getCurNode();
+        //nsPrefix:local[condition][condition]  for example ns:person[@name='john'][@age='16'][job]
+        String temp = nodeExpression.trim();
+
+        if (nodeExpression.contains("(:")) {
+            Cons<String, String> findingResult = StringUtils.findFirstQuotingString(nodeExpression, new Cons<String, String>("(:", ")"), Arrays.asList(new Cons<String, String>("(", ")")));
+            mark = findingResult.getLeft();
+            temp = findingResult.getRight();
+        }
+
+        //1. deal with namespace prefix   temp = nsPrefix:local[condition][condition]
+        String[] split = StringUtils.splitBySeparator(temp, ':', new char[][]{{'\'', '\''}, {'[', ']'}, {'(', ')'}}, false);
+        if (split[1] != null) {
+            nsPrefix = StringUtils.trimToNull(split[0]);
+            temp = split[1];
+        }
+        namespaceURI = nsMap.get(nsPrefix);
+
+        //2. deal with local name    temp = local[condition][condition]
+        split = StringUtils.splitBySeparator(temp, '[', true);
+        if (split[1] == null) {
+            localName = StringUtils.trimToNull(split[0]);
+            return;
+        } else {
+            localName = StringUtils.trimToNull(split[0]);
+            temp = split[1];
+        }
+
+        //3. deal with conditions    temp = [condition][condition]
+        split = temp.substring(1).split("\\[");
+        conditions = new String[split.length];
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i];
+            conditions[i] = StringUtils.stripEnd(s, "]");
+        }
     }
 
     public String getValue() {
@@ -82,6 +135,26 @@ public class XModifyNode {
         return elementXPaths[index];
     }
 
+    public String getNsPrefix() {
+        return nsPrefix;
+    }
+
+    public String getNamespaceURI() {
+        return namespaceURI;
+    }
+
+    public String getLocalName() {
+        return localName;
+    }
+
+    public String[] getConditions() {
+        return conditions;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
     @Override
     public String toString() {
         return "XModifyNode{" +
@@ -92,12 +165,28 @@ public class XModifyNode {
     }
 
     protected XModifyNode duplicate() {
-        XModifyNode node = new XModifyNode();
-        node.xPath = this.xPath;
-        node.value = this.value;
-        node.index = this.index;
-        node.elements = this.elements;
-        node.elementXPaths = this.elementXPaths;
-        return node;
+        return new XModifyNode(nsMap, xPath, value, elements, elementXPaths, index);
+    }
+
+    public boolean isAdding() {
+        return mark != null && mark.equals("add");
+    }
+
+    public boolean isDeleting() {
+        return mark != null && mark.equals("delete");
+    }
+
+    public boolean isInsertBefore() {
+        return mark != null && mark.startsWith("insertBefore");
+    }
+
+    public String getInsertBeforeXPath() {
+        Cons<String, String> result = StringUtils.findFirstQuotingString(mark, new Cons<String, String>("insertBefore(", ")"),
+                Arrays.asList(new Cons<String, String>("(", ")")));
+        if (result != null) {
+            return "./" + result.getLeft();
+        } else {
+            return null;
+        }
     }
 }

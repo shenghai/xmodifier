@@ -167,6 +167,16 @@ public class XModifierTest {
     }
 
     @Test
+    public void add3() throws ParserConfigurationException, IOException, SAXException {
+        Document document = readDocument("PersonList.xml");
+        Document documentExpected = readDocument("add3Expected.xml");
+        XModifier modifier = new XModifier(document);
+        modifier.addModify("//PersonList/Person(:insertBefore(Person[Name='Name2']))/Name", "NewName");
+        modifier.modify();
+        assertXmlEquals(documentExpected, document);
+    }
+
+    @Test
     public void test() throws IOException, SAXException, ParserConfigurationException {
         Document document = readDocument("test.xml");
         Document documentExpected = readDocument("testExpected.xml");
