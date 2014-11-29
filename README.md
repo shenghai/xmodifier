@@ -18,6 +18,15 @@ xmodifier
 		| //PersonList/Person[1]/Name(:delete)                          |         | delete this Name node                             |
 		| //PersonList/Person(:add)/Name                                | NewName | alway add a new Person node                       |
 		| //PersonList/Person(:insertBefore(Person[Name='Name2']))/Name | NewName | add a new Person node before Person named "Name2" |
+        
+		Special xmodify mark
+		all special mark is start with (: and end with )
+		they are not part of standard XPATH, use them only when you have to.
+		| Mark                   | usage                                                                                            |
+		|------------------------+--------------------------------------------------------------------------------------------------|
+		| (:add)                 | always add new element (by default only add new element when not exist)                          |
+		| (:delete)              | delete an element                                                                                |
+		| (:insertBefore(XPATH)) | always add new element, and control the position of it, (by default only append to last element) |
 
 
 		code example:
