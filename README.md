@@ -20,7 +20,7 @@ xmodifier
 		| //PersonList/Person(:insertBefore(Person[Name='Name2']))/Name | NewName | add a new Person node before Person named "Name2" |
         
 		Special xmodify mark
-		all special mark is start with (: and end with )
+		all special marks are start with (: and end with )
 		they are not part of standard XPATH, use them only when you have to.
 		| Mark                   | usage                                                                                            |
 		|------------------------+--------------------------------------------------------------------------------------------------|
