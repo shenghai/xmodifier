@@ -6,7 +6,7 @@ The purpose of this project is very simple:  **Use XPATH to edit XML or create X
 XPATH is used for searching XML,
 but sometimes you may want use it to edit/create XML:
 ####examples
-<table border="1">
+<table>
 <tr><th>XPath</th><th>Value</th><th>Desc</th></tr>
 <tr><td>/ns:root/ns:element1                                         </td><td>       </td><td>add <ns:element1/>                               </td></tr>
 <tr><td>/ns:root/ns:element2[@attr=1]                                </td><td>       </td><td>add <ns:element2 attr="1"/>                      </td></tr>
@@ -24,7 +24,7 @@ but sometimes you may want use it to edit/create XML:
 Special XModifier mark
 all special marks are start with (: and end with )
 they are not part of standard XPATH, use them only when you have to.
-<table border="1">
+<table>
 <tr><th>Mark</th><th>usage</th></tr>
 <tr><td>(:add)                </td><td>always add new element (by default only add new element when not exist)                          </td></tr>
 <tr><td>(:delete)             </td><td>delete an element                                                                                </td></tr>
