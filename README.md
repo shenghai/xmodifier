@@ -50,7 +50,6 @@ they are not part of standard XPATH, use them only when you have to.
 ```
 result xml:
 ```xml
-		result xml:
 		<root xmlns="http://localhost">
 			<element1>
 				<element11/>
