@@ -8,12 +8,12 @@ but sometimes you may want use it to edit/create XML:
 ####examples
 <table>
 <tr><th>XPath</th><th>Value</th><th>Desc</th></tr>
-<tr><td>/ns:root/ns:element1                                         </td><td>       </td><td>add <ns:element1/>                               </td></tr>
-<tr><td>/ns:root/ns:element2[@attr=1]                                </td><td>       </td><td>add <ns:element2 attr="1"/>                      </td></tr>
-<tr><td>/ns:root/ns:element2/@attr                                   </td><td>1      </td><td>add <ns:element2 attr="1"/>                      </td></tr>
-<tr><td>/ns:root/ns:element1/ns:element11                            </td><td>       </td><td>add <ns:element11/>                              </td></tr>
-<tr><td>/ns:root/ns:element3                                         </td><td>TEXT   </td><td>add <ns:element3>TEXT</ns:element3>              </td></tr>
-<tr><td>/ns:root/ns:element1[ns:element12]/ns:element13              </td><td>       </td><td>add <ns:element13/>                              </td></tr>
+<tr><td>/ns:root/ns:element1                                         </td><td>       </td><td>add &lt;ns:element1/>                               </td></tr>
+<tr><td>/ns:root/ns:element2[@attr=1]                                </td><td>       </td><td>add &lt;ns:element2 attr="1"/>                      </td></tr>
+<tr><td>/ns:root/ns:element2/@attr                                   </td><td>1      </td><td>add &lt;ns:element2 attr="1"/>                      </td></tr>
+<tr><td>/ns:root/ns:element1/ns:element11                            </td><td>       </td><td>add &lt;ns:element11/>                              </td></tr>
+<tr><td>/ns:root/ns:element3                                         </td><td>TEXT   </td><td>add &lt;ns:element3>TEXT&lt;/ns:element3>              </td></tr>
+<tr><td>/ns:root/ns:element1[ns:element12]/ns:element13              </td><td>       </td><td>add &lt;ns:element13/>                              </td></tr>
 <tr><td>//PersonList/Person[2]/Name                                  </td><td>NewName</td><td>set the second Person node's Name Text           </td></tr>
 <tr><td>//PersonList/Person[2]/Name/text()                           </td><td>NewName</td><td>set the second Person node's Name Text           </td></tr>
 <tr><td>//PersonList/Person[1]/Name(:delete)                         </td><td>       </td><td>delete this Name node                            </td></tr>
