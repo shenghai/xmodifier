@@ -17,7 +17,7 @@ but sometimes you may want use it to edit/create XML:
 <tr><td>//PersonList/Person[2]/Name                                  </td><td>NewName</td><td>set the second Person node's Name Text           </td></tr>
 <tr><td>//PersonList/Person[2]/Name/text()                           </td><td>NewName</td><td>set the second Person node's Name Text           </td></tr>
 <tr><td>//PersonList/Person[1]/Name(:delete)                         </td><td>       </td><td>delete this Name node                            </td></tr>
-<tr><td>//PersonList/Person(:add)/Name                               </td><td>NewName</td><td>alway add a new Person node                      </td></tr>
+<tr><td>//PersonList/Person(:add)/Name                               </td><td>NewName</td><td>always add a new Person node                      </td></tr>
 <tr><td>//PersonList/Person(:insertBefore(Person[Name='Name2']))/Name</td><td>NewName</td><td>add a new Person node before Person named "Name2"</td></tr>
 </table>
 
