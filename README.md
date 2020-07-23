@@ -1,9 +1,11 @@
 XModifier
 =========
 
+*This project is just a hobby project, please feel free to copy, change or use it.*
+
 The purpose of this project is very simple:  **Use XPATH to edit XML or create XML**
 
-XPATH is used for searching XML,
+XPATH is used for querying XML,
 but sometimes you may want use it to edit/create XML:
 ####examples
 <table style="font-size:80%">
@@ -32,8 +34,8 @@ they are not part of standard XPATH, use them only when you have to.
 </table>
 
 
-#Code example:
-####Create new xml:
+# Code example:
+#### Create new xml:
 ```java
 		Document document = createDocument(); //empty document
 		XModifier modifier = new XModifier(document);
