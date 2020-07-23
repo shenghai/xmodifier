@@ -7,7 +7,9 @@ The purpose of this project is very simple:  **Use XPATH to edit XML or create X
 
 XPATH is used for querying XML,
 but sometimes you may want use it to edit/create XML:
-####examples
+
+#### examples
+
 <table style="font-size:80%">
 <tr><th>XPath</th><th>Value</th><th>Desc</th></tr>
 <tr><td>/ns:root/ns:element1                                         </td><td>       </td><td>add &lt;ns:element1/>                               </td></tr>
@@ -35,7 +37,9 @@ they are not part of standard XPATH, use them only when you have to.
 
 
 # Code example:
+
 #### Create new xml:
+
 ```java
 		Document document = createDocument(); //empty document
 		XModifier modifier = new XModifier(document);
@@ -60,7 +64,8 @@ result xml:
 			<element3>TEXT</element3>
 		</root>
 ```
-####Modify exist xml:
+#### Modify exist xml:
+
 original xml:
 ```xml
 		<root xmlns="http://localhost">
